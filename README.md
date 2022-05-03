@@ -81,10 +81,6 @@ The plugin, at the moment, supports the following field types:
 ```
 - any other - `number`, `text` and other supported by HTML input field (when field type is not any of above, it fallbacks to standard input field with type specified)
 
-## Installation
-
-
-
 ## Known issues
 
 - doesn't support inline adding of new files/records
@@ -97,3 +93,7 @@ The plugin, at the moment, supports the following field types:
 - add grouping
 - add autosuggest for link fields
 - add clickable links to files in link fields
+
+## Use plugins and other projects
+
+This plugin is powered by [Vue](https://github.com/vuejs/vue) and [Vuetify](https://github.com/vuetifyjs/vuetify)!

@@ -73,7 +73,6 @@ export default Vue.extend({
     this.rows = (
       await Promise.all(this.sources.map((x) => x.loadData()))
     ).flat();
-    console.log("data loaded");
   },
 });
 </script>
