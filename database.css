@@ -1,0 +1,39 @@
+/* Sets all the text color to red! */
+
+table.database td {
+    padding: 0 5px;
+    margin: 0 0;
+}
+
+table.database a {
+    text-decoration: none;
+}
+
+table.database input,
+table.database input:hover,
+table.database select {
+    padding: 0 0;
+    margin: 0 0;
+    border: 0;
+    width: 100%;
+    background: none;
+    font-size: 14px;
+}
+
+table.database th {
+    font-size: 14px;
+    text-align: left;
+    white-space: nowrap;
+    padding: 0 5px;
+    margin: 0 0;
+    border: none;
+    border-bottom: 1px solid black;
+}
+
+table.database tr:nth-child(even) {
+    background: #f4f4f4;
+}
+
+table.database tr:nth-child(odd) {
+    background: #FFF;
+}

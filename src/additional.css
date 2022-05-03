@@ -1,0 +1,12 @@
+.v-application--wrap {
+  min-height: 0vh !important;
+}
+
+input {
+  height: unset !important;
+}
+
+th {
+  white-space: nowrap;
+  border: none !important;
+}
