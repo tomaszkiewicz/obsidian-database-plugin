@@ -21,7 +21,7 @@ const DEFAULT_SETTINGS: DatabasePluginSettings = {
 	mySetting: 'default'
 }
 
-export default class MyPlugin extends Plugin {
+export default class DatabasePlugin extends Plugin {
 	settings: DatabasePluginSettings;
 	instances: any[]
 
@@ -80,9 +80,9 @@ export default class MyPlugin extends Plugin {
 
 // for future use
 class DatabasePluginSettingTab extends PluginSettingTab {
-	plugin: MyPlugin;
+	plugin: DatabasePlugin;
 
-	constructor(app: App, plugin: MyPlugin) {
+	constructor(app: App, plugin: DatabasePlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}

@@ -181,12 +181,12 @@ export default Vue.extend({
   </v-app>
 </template>
 <style scoped>
-a,
-a:hover {
+div >>> a,
+div >>> a:hover {
   text-decoration: none;
 }
 
-td {
+div >>> td {
   white-space: normal;
 }
 
@@ -196,17 +196,18 @@ div >>> p {
   display: inline;
 }
 
-th {
+div >>> th {
   white-space: nowrap;
   border: none !important;
 }
 
-input,
-input:hover,
-select {
+div >>> input,
+div >>> input:hover,
+div >>> select {
   padding: 0 0;
   margin: 0 0;
   border: 0;
+  height: unset !important;
   width: 100%;
   background: none;
   font-size: 14px;
