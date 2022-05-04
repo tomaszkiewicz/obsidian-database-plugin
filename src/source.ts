@@ -1,4 +1,4 @@
-import { stringifyYaml } from 'obsidian';
+import { stringifyYaml, TFolder } from 'obsidian';
 import { parseYaml } from 'obsidian';
 import { Vault, MetadataCache, TFile } from 'obsidian';
 
@@ -27,7 +27,7 @@ export class DirectorySource implements Source {
   }
 
   async loadData(): Promise<Row[]> {
-    const files = this.vault.getFiles().filter(f => f.path.startsWith(this.path))
+    const files = this.vault.getFiles().filter(f => f.path.startsWith(this.path) && f.path.endsWith(".md"))
     const rows = [] as Row[]
 
     for (let f of files) {

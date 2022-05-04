@@ -2,6 +2,7 @@
 import Vue from "vue";
 import type { Field } from "../field";
 import { Row } from "../source";
+import MarkdownLink from "./MarkdownLink.vue";
 import type { Source } from "../source";
 import {
   VAlert,
@@ -25,6 +26,7 @@ export default Vue.extend({
     VTextField,
     VRating,
     VSlider,
+    MarkdownLink,
   },
   props: {
     fields: [],
@@ -97,16 +99,15 @@ export default Vue.extend({
             :style="getCellStyle(field, item)"
             :width="field.width || ''"
           >
-            <a
-              :href="'obsidian://open?file=' + item._file.name"
+            <markdown-link
+              :href="item._file.name"
               v-if="field.type == 'fileName'"
-              >{{ item._file.name }}</a
-            >
-            <a
-              :href="'obsidian://open?file=' + item._file.name"
+            />
+
+            <markdown-link
+              :href="item._file.name"
               v-if="field.type == 'filePath'"
-              >{{ item._file.path }}</a
-            >
+            />
 
             <input
               v-if="field.type == 'link'"
@@ -187,6 +188,12 @@ a:hover {
 
 td {
   white-space: normal;
+}
+
+div >>> p {
+  padding: 0 0;
+  margin: 0 0;
+  display: inline;
 }
 
 th {
