@@ -1,4 +1,4 @@
-import { stringifyYaml, TFolder } from 'obsidian';
+import { stringifyYaml, TFolder, } from 'obsidian';
 import { parseYaml } from 'obsidian';
 import { Vault, MetadataCache, TFile } from 'obsidian';
 
@@ -14,6 +14,15 @@ export interface Source {
   setLink(file: TFile, field: string, value: string): Promise<void>
   setData(file: TFile, field: string, value: string): Promise<void>
 }
+
+// export const mapSources = (sources: any, app : App) : Source[] => {
+//   console.log(sources)
+//   return sources.map((s: any) => {
+//     if (s.type == "directory") {
+//       return new DirectorySource(s.path, app.vault, app.metadataCache)
+//     }
+//   })
+// }
 
 export class DirectorySource implements Source {
   vault: Vault
@@ -54,16 +63,18 @@ export class DirectorySource implements Source {
     const linksObj = parseYaml(linksContent) || {}
 
     for (let k in linksObj) {
-      if (Array.isArray(linksObj[k])) {
-        linksObj[k] = linksObj[k].join(", ")
+      if (!Array.isArray(linksObj[k])) {
+        linksObj[k] = linksObj[k].split(",")
       }
-      linksObj[k] = linksObj[k].replaceAll("[[", "").replaceAll("]]", "")
+      for (let i in linksObj[k]) {
+        linksObj[k][i] = linksObj[k][i].replaceAll("[[", "").replaceAll("]]", "")
+      }
     }
 
     return Promise.resolve(linksObj)
   }
 
-  async setLink(file: TFile, field: string, value: string): Promise<void> {
+  async setLink(file: TFile, field: string, value: any): Promise<void> {
     let content = await this.vault.read(file)
     const startIndex = content.indexOf("%%%")
     const endIndex = content.indexOf("%%%", startIndex + 3)
@@ -89,7 +100,15 @@ export class DirectorySource implements Source {
 
     const linksObj = parseYaml(linksContent) || {}
 
-    linksObj[field] = value.contains(",") ? value.split(",").map(x => `[[${x.trim()}]]`) : `[[${value}]]`
+    if (!Array.isArray(value)) {
+      value = [value]
+    }
+
+    linksObj[field] = value.map((x: string) => `[[${x.trim()}]]`)
+
+    if (linksObj[field].length == 1) {
+      linksObj[field] = linksObj[field][0]
+    }
 
     let outFileContents = ""
     outFileContents += beforeLinksContent

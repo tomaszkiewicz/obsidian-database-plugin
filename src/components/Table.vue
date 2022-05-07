@@ -4,6 +4,7 @@ import type { Field } from "../field";
 import { Row } from "../source";
 import MarkdownLink from "./MarkdownLink.vue";
 import type { Source } from "../source";
+import { TinyColor } from "@ctrl/tinycolor";
 import {
   VAlert,
   VDataTable,
@@ -11,12 +12,18 @@ import {
   VTextField,
   VRating,
   VSlider,
+  VSelect,
+  VSimpleCheckbox,
+  VCombobox,
+  VChip,
+  Ripple,
 } from "vuetify/lib";
 
 export default Vue.extend({
   data() {
     return {
       rows: [] as Row[],
+      suggestedLinksTmp: ["PageA", "PageB", "PageC"],
     };
   },
   components: {
@@ -27,6 +34,13 @@ export default Vue.extend({
     VRating,
     VSlider,
     MarkdownLink,
+    VSelect,
+    VSimpleCheckbox,
+    VCombobox,
+    VChip,
+  },
+  directives: {
+    Ripple,
   },
   props: {
     fields: [],
@@ -52,6 +66,11 @@ export default Vue.extend({
 
     async linkUpdated(row: Row, field: string): Promise<void> {
       console.log(`updated link ${field} on ${row._file.path}`);
+
+      if (!Array.isArray(row[field])) {
+        row[field] = [row[field]];
+      }
+
       await row._source.setLink(row._file, field, row[field]);
     },
 
@@ -64,17 +83,39 @@ export default Vue.extend({
           .first();
 
         if (selectedOption && selectedOption.color) {
-          return `background-color: ${selectedOption.color}; color: white !important`;
+          return `background-color: ${selectedOption.color}`;
         }
       }
 
       return "";
+    },
+
+    isFontWhite(field: Field, row: Row): boolean {
+      const fieldValue = row[field.name];
+
+      if (field.type == "dropdown") {
+        const selectedOption = field.options
+          .filter((x: any) => x.value == fieldValue)
+          .first();
+
+        if (selectedOption && selectedOption.color) {
+          return (
+            selectedOption.dark || new TinyColor(selectedOption.color).isDark()
+          );
+        }
+      }
+
+      return false;
     },
   },
   async mounted() {
     this.rows = (
       await Promise.all(this.sources.map((x) => x.loadData()))
     ).flat();
+
+    // for(let f of this.fields.filter((f : Field) => f.type == "link" && f.sources != null)) {
+    //   console.log(f)
+    // }
   },
 });
 </script>
@@ -109,21 +150,26 @@ export default Vue.extend({
               v-if="field.type == 'filePath'"
             />
 
-            <input
+            <v-combobox
               v-if="field.type == 'link'"
-              type="text"
-              v-model.lazy="item[field.name]"
+              v-model="item[field.name]"
+              :items="suggestedLinksTmp"
+              hide-details
+              dense
+              :multiple="field.multiple"
               @change="linkUpdated(item, field.name)"
-            />
-
-            <!-- <span v-if="field.type == 'link'">
-              <a
-                v-for="link in item[field.name].split(',')"
-                :key="link"
-                :href="'obsidian://open?file=' + link"
-                >{{ link }}</a
-              >
-            </span> -->
+            >
+              <template v-slot:selection="{ attrs, item, parent, selected }">
+                <v-chip v-if="field.multiple" small
+                  ><markdown-link :href="Array.isArray(item) ? item[0] : item"
+                /></v-chip>
+                <markdown-link
+                  v-else
+                  :key="item.join(',')"
+                  :href="Array.isArray(item) ? item[0] : item"
+                />
+              </template>
+            </v-combobox>
 
             <v-rating
               v-if="field.type == 'rating'"
@@ -135,15 +181,15 @@ export default Vue.extend({
                 item[field.name] = $event;
                 fieldUpdated(item, field.name);
               "
-            ></v-rating>
+            />
 
             <v-slider
               v-if="field.type == 'progress'"
               dense
-              hide-details="auto"
+              hide-details
               v-model.lazy="item[field.name]"
               @end="fieldUpdated(item, field.name)"
-            ></v-slider>
+            />
 
             <input
               v-if="
@@ -153,6 +199,7 @@ export default Vue.extend({
                   field.type != 'progress' &&
                   field.type != 'fileName' &&
                   field.type != 'filePath' &&
+                  field.type != 'checkbox' &&
                   field.type != 'rating')
               "
               :type="field.type"
@@ -161,19 +208,28 @@ export default Vue.extend({
               @change="fieldUpdated(item, field.name)"
             />
 
-            <select
+            <v-simple-checkbox
+              v-if="field.type == 'checkbox'"
+              v-model="item[field.name]"
+              hide-details
+              dense
+              @input="fieldUpdated(item, field.name)"
+            />
+
+            <v-select
               v-if="field.type == 'dropdown'"
               v-model="item[field.name]"
+              :items="field.options"
+              hide-details
+              item-text="label"
+              item-value="value"
+              dense
+              :dark="isFontWhite(field, item)"
+              :small-chips="field.multiple != null && field.multiple != false"
+              :multiple="field.multiple != null && field.multiple != false"
+              :chips="field.multiple != null && field.multiple != false"
               @change="fieldUpdated(item, field.name)"
-            >
-              <option
-                :value="option.value"
-                v-for="option in field.options"
-                :key="option.value"
-              >
-                {{ option.label }}
-              </option>
-            </select>
+            />
           </td>
         </tr>
       </template>
@@ -203,6 +259,10 @@ div >>> th {
 
 div >>> input,
 div >>> input:hover,
+div >>> .v-input,
+div >>> .v-input__control,
+div >>> .v-input__slot::before,
+div >>> .v-input__slot::after,
 div >>> select {
   padding: 0 0;
   margin: 0 0;
@@ -221,4 +281,19 @@ tr:nth-child(even) {
 tr:nth-child(odd) {
   /* background: #fff; */
 }
+
+div >>> .v-menu__content {
+  z-index: 100;
+}
+
+div >>> .v-data-table__wrapper {
+  overflow-y: visible;
+}
+
+/*
+// for future use in grouping
+div >>> tr.v-row-group__header {
+  background-color: white !important;
+}
+*/
 </style>

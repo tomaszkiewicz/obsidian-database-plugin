@@ -1,4 +1,4 @@
-import { Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, App } from 'obsidian';
 import { parseFrontMatterStringArray } from 'obsidian';
 import { parseYaml } from 'obsidian';
 import { MarkdownPostProcessor, MarkdownRenderChild } from "obsidian";

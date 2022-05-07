@@ -1,3 +1,7 @@
 .v-application--wrap {
   min-height: 0vh !important;
 }
+
+.markdown-source-view.mod-cm6 .cm-content > [contenteditable=false].markdown-rendered {
+  contain: none;
+}
