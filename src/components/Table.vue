@@ -284,6 +284,7 @@ div >>> .v-menu__content {
 
 div >>> .v-data-table__wrapper {
   overflow-y: visible;
+  overflow-x: hidden;
 }
 
 /*
