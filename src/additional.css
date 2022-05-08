@@ -5,3 +5,7 @@
 .markdown-source-view.mod-cm6 .cm-content > [contenteditable=false].markdown-rendered {
   contain: none;
 }
+
+html, body {
+  overflow-y: hidden;
+}
