@@ -12,9 +12,9 @@ if you want to view the source, please visit the github repository of this plugi
 */
 `;
 
-const outDir = '/mnt/d/OneDrive/Obsidian/PluginsDev/.obsidian/plugins/obsidian-database-plugin'
-
 const prod = (process.argv[2] === 'production');
+
+const outDir = prod ? 'dist' : '/mnt/d/OneDrive/Obsidian/PluginsDev/.obsidian/plugins/obsidian-database-plugin'
 
 // Obsidian requires that the style file is called styles.css
 const renameCSSFile = () => fs.rename(outDir + '/main.css', outDir + '/styles.css', () => { })

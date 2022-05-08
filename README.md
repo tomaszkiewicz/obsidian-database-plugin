@@ -30,16 +30,30 @@ fields:
 - name: brand
   label: Brand
   type: link
-- name: model
-  label: Model
+- name: model # field name in frontmatter
+  label: Model # display label
 - name: year
   label: Year
 - name: mileage
   label: Mileage
-- name: rate
-  label: Rate
-  type: rating
-  width: 10%
+- name: accessories
+  label: Accessories
+  type: dropdown
+  multiple: true
+  options:
+  - label: Crash bars
+    value: crash-bars
+  - label: Bags
+    value: bags
+  - label: Cruise control
+    value: cruise-control
+  - name: rate
+    label: Rate
+    type: rating
+    width: 10%
+  - name: owned
+    label: Owned
+    type: checkbox
 \```
 ```
 (replace final line with triple ` )
@@ -54,45 +68,86 @@ fields:
 
 The plugin, at the moment, supports the following field types:
 
-- fileName - name of the file
-- filePath - path to the file
-- link - this field generates a block with links in the target documents, every entry that you put (separated by a comma) will be saved as a link in the document
-- rating - shows 5 stars for providing a rating
-- progress - shows progress bar (0-100%)
-- dropdown - generates a dropdown with selectable values, the sample format:
+### fileName
+
+Generates clickable link with filename.
+### filePath
+
+Generates clickable link with full file path (relative to vault root).
+
+### link
+
+This type generates a block with links in the target documents, you can add `multiple: true` to link to multiple documents.
+
+### rating
+
+Shows 5 stars control for providing a rating.
+
+### progress -
+
+Shows a slider that you can use to set the progress  (0-100%).
+
+### checkbox
+
+Simple checkbox with true/false values
+
+### dropdown
+
+Generates a dropdown with selectable values. You can use it to select predefined value or values from list:
+
+Multiple values example:
 
 ```
-- name: acidity
-  label: Kwasowość
+- name: accessories
+  label: Accessories
   type: dropdown
+  multiple: true
   options:
-  - label: wytrawne
-    value: dry
-    color: red
-  - label: półwytrawne
-    value: semi-dry
-    color: orange
-  - label: półsłodkie
-    value: semi-sweet
-    color: darkgreen
-    fontColor: white
-  - label: słodkie
-    value: sweet
+  - label: Crash bars
+    value: crash-bars
+  - label: Bags
+    value: bags
+  - label: Cruise control
+    value: cruise-control
 ```
-- any other - `number`, `text` and other supported by HTML input field (when field type is not any of above, it fallbacks to standard input field with type specified)
+
+Single value example (with colors):
+
+```
+- name: status
+  label: Status
+  type: dropdown
+  width: 10%
+  options:
+  - label: In progress
+    value: inProgress
+    color: green
+  - label: Next up
+    value: nextUp
+    color: gray
+    dark: true
+```
+
+By default, the font color will be determined automatically, but if you want to adjust it to be white, then mark the item with `dark: true` to indicate that a provided color is dark.
+
+### Other types
+
+`number`, `text`, `date` and other supported by HTML input field (when field type is not any of above, it fallbacks to standard input field with type specified)
 
 ## Known issues
 
-- doesn't support inline adding of new files/records
+- doesn't support inline adding of new files/records yet
 - sometimes it doesn't show when changed from live preview to reading mode
 - doesn't support dark mode
-- dropdown doesn't allow to customize font color
+- uses ugly CSS to show context menus
+- sometimes it shows unnecessary vertical scrollbar (when editor is not wide enough)
 
 ## Future plan
 - add filtering
 - add grouping
+- add sorting in both directions in the code
 - add autosuggest for link fields
-- add clickable links to files in link fields
+- add ability to use Dataview queries as a source
 
 ## Use plugins and other projects
 
