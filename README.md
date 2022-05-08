@@ -30,6 +30,9 @@ fields:
 - name: brand
   label: Brand
   type: link
+  sources:
+  - type: directory
+    path: brands
 - name: model # field name in frontmatter
   label: Model # display label
 - name: year
@@ -58,7 +61,7 @@ fields:
 ```
 (replace final line with triple ` )
 
-3. now, create some files inside directory `motorcycles`, they can be blank or you can put some sample frontmatter matching `name` in the list above
+3. now, create some files inside directory `motorcycles` (and if you want autosuggest for `Brand` field then create some files in `brands` folder), they can be blank or you can put some sample frontmatter matching `name` in the list above
 4. after you go back to a file with a table, you should see entries for newly created files
 5. you can put data in the table now and they will be filled inside the files!
 
@@ -79,11 +82,24 @@ Generates clickable link with full file path (relative to vault root).
 
 This type generates a block with links in the target documents, you can add `multiple: true` to link to multiple documents.
 
+To enable autocomplete you need to add `source` parameter:
+
+```
+- name: brand
+  label: Brand
+  type: link
+  sources:
+  - type: directory
+    path: brands
+```
+
+This way the plugin searches `brands` directory and suggest linking to any file within that directory.
+
 ### rating
 
 Shows 5 stars control for providing a rating.
 
-### progress -
+### progress
 
 Shows a slider that you can use to set the progress  (0-100%).
 
@@ -146,7 +162,6 @@ By default, the font color will be determined automatically, but if you want to 
 - add filtering
 - add grouping
 - add sorting in both directions in the code
-- add autosuggest for link fields
 - add ability to use Dataview queries as a source
 
 ## Use plugins and other projects

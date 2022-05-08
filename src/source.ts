@@ -1,4 +1,4 @@
-import { stringifyYaml, TFolder, } from 'obsidian';
+import { App, stringifyYaml, TFolder, } from 'obsidian';
 import { parseYaml } from 'obsidian';
 import { Vault, MetadataCache, TFile } from 'obsidian';
 
@@ -15,14 +15,14 @@ export interface Source {
   setData(file: TFile, field: string, value: string): Promise<void>
 }
 
-// export const mapSources = (sources: any, app : App) : Source[] => {
-//   console.log(sources)
-//   return sources.map((s: any) => {
-//     if (s.type == "directory") {
-//       return new DirectorySource(s.path, app.vault, app.metadataCache)
-//     }
-//   })
-// }
+export const mapSources = (sources: any, app : App) : Source[] => {
+  console.log(sources)
+  return sources.map((s: any) => {
+    if (s.type == "directory") {
+      return new DirectorySource(s.path, app.vault, app.metadataCache)
+    }
+  })
+}
 
 export class DirectorySource implements Source {
   vault: Vault

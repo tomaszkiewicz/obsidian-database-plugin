@@ -1,7 +1,7 @@
 <script lang="ts">
 import Vue from "vue";
 import type { Field } from "../field";
-import { Row } from "../source";
+import { mapSources, Row } from "../source";
 import MarkdownLink from "./MarkdownLink.vue";
 import type { Source } from "../source";
 import { TinyColor } from "@ctrl/tinycolor";
@@ -18,6 +18,7 @@ import {
   VChip,
   Ripple,
 } from "vuetify/lib";
+import { App } from "obsidian";
 
 export default Vue.extend({
   data() {
@@ -110,12 +111,8 @@ export default Vue.extend({
   },
   async mounted() {
     this.rows = (
-      await Promise.all(this.sources.map((x) => x.loadData()))
+      await Promise.all(this.sources.map((x : Source) => x.loadData()))
     ).flat();
-
-    // for(let f of this.fields.filter((f : Field) => f.type == "link" && f.sources != null)) {
-    //   console.log(f)
-    // }
   },
 });
 </script>
@@ -153,7 +150,7 @@ export default Vue.extend({
             <v-combobox
               v-if="field.type == 'link'"
               v-model="item[field.name]"
-              :items="suggestedLinksTmp"
+              :items="field._sourceAutocomplete || []"
               hide-details
               dense
               :multiple="field.multiple"
