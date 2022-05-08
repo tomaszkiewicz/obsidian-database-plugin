@@ -16,7 +16,6 @@ export interface Source {
 }
 
 export const mapSources = (sources: any, app : App) : Source[] => {
-  console.log(sources)
   return sources.map((s: any) => {
     if (s.type == "directory") {
       return new DirectorySource(s.path, app.vault, app.metadataCache)

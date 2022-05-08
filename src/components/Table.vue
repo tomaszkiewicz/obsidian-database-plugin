@@ -18,13 +18,11 @@ import {
   VChip,
   Ripple,
 } from "vuetify/lib";
-import { App } from "obsidian";
 
 export default Vue.extend({
   data() {
     return {
       rows: [] as Row[],
-      suggestedLinksTmp: ["PageA", "PageB", "PageC"],
     };
   },
   components: {
@@ -109,6 +107,7 @@ export default Vue.extend({
       return false;
     },
   },
+
   async mounted() {
     this.rows = (
       await Promise.all(this.sources.map((x : Source) => x.loadData()))
