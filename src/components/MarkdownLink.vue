@@ -23,3 +23,8 @@ export default Vue.extend({
 });
 </script>
 <template></template>
+<style scoped>
+div >>> span {
+  white-space: nowrap;
+}
+</style>
