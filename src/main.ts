@@ -38,13 +38,16 @@ export default class DatabasePlugin extends Plugin {
 				const div = document.createElement("div");
 				const child = new MarkdownRenderChild(div);
 				const sources = mapSources(parameters.sources, this.app)
+				const rows = (
+					await Promise.all(sources.map((x: Source) => x.loadData()))
+				).flat();
 
 				for (let f of parameters.fields.filter((f: Field) => f.type == "link" && f.sources != null)) {
 					const fieldSources = mapSources(f.sources, this.app)
 
 					let autocomplete = (
 						await Promise.all(fieldSources.map((x: Source) => x.loadData()))
-					).flat().map((x : Row) => x._file.name.replace(".md", ""));
+					).flat().map((x: Row) => x._file.name.replace(".md", ""));
 
 					f._sourceAutocomplete = autocomplete
 				}
@@ -54,7 +57,7 @@ export default class DatabasePlugin extends Plugin {
 					render: h => h(Table, {
 						props: {
 							...parameters,
-							sources,
+							rows,
 						}
 					}),
 				})

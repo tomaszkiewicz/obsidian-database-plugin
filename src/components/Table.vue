@@ -1,9 +1,8 @@
 <script lang="ts">
 import Vue from "vue";
 import type { Field } from "../field";
-import { mapSources, Row } from "../source";
+import { Row } from "../source";
 import MarkdownLink from "./MarkdownLink.vue";
-import type { Source } from "../source";
 import { TinyColor } from "@ctrl/tinycolor";
 import {
   VAlert,
@@ -20,11 +19,6 @@ import {
 } from "vuetify/lib";
 
 export default Vue.extend({
-  data() {
-    return {
-      rows: [] as Row[],
-    };
-  },
   components: {
     VAlert,
     VDataTable,
@@ -43,8 +37,8 @@ export default Vue.extend({
   },
   props: {
     fields: [],
-    sources: [],
     groupBy: [],
+    rows: [],
     sortBy: [],
   },
   computed: {
@@ -106,12 +100,6 @@ export default Vue.extend({
 
       return false;
     },
-  },
-
-  async mounted() {
-    this.rows = (
-      await Promise.all(this.sources.map((x : Source) => x.loadData()))
-    ).flat();
   },
 });
 </script>
