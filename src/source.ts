@@ -1,4 +1,4 @@
-import { App, stringifyYaml, TFolder, } from 'obsidian';
+import { App, stringifyYaml, } from 'obsidian';
 import { parseYaml } from 'obsidian';
 import { Vault, MetadataCache, TFile } from 'obsidian';
 
@@ -15,27 +15,31 @@ export interface Source {
   setData(file: TFile, field: string, value: string): Promise<void>
 }
 
-export const mapSources = (sources: any, app : App) : Source[] => {
+export const mapSources = (sources: any, app: App): Source[] => {
   return sources.map((s: any) => {
-    if (s.type == "directory") {
-      return new DirectorySource(s.path, app.vault, app.metadataCache)
+    switch (s.type) {
+      case "directory":
+        return new DirectorySource(s.path, app.vault, app.metadataCache)
+
+      case "tags":
+        return new TagsSource(s.tags, app.vault, app.metadataCache)
     }
   })
 }
 
-export class DirectorySource implements Source {
+export abstract class FileSystemSource implements Source {
   vault: Vault
-  path: string
   metadataCache: MetadataCache
 
-  constructor(path: string, vault: Vault, metadataCache: MetadataCache) {
+  constructor(vault: Vault, metadataCache: MetadataCache) {
     this.vault = vault
-    this.path = path
     this.metadataCache = metadataCache
   }
 
+  abstract getFiles(): TFile[]
+
   async loadData(): Promise<Row[]> {
-    const files = this.vault.getFiles().filter(f => f.path.startsWith(this.path) && f.path.endsWith(".md"))
+    const files = this.getFiles()
     const rows = [] as Row[]
 
     for (let f of files) {
@@ -74,7 +78,7 @@ export class DirectorySource implements Source {
   }
 
   async setLink(file: TFile, field: string, value: any): Promise<void> {
-    let content = await this.vault.read(file)
+    let content = await this.vault.cachedRead(file)
     const startIndex = content.indexOf("%%%")
     const endIndex = content.indexOf("%%%", startIndex + 3)
 
@@ -122,7 +126,7 @@ export class DirectorySource implements Source {
   }
 
   async setData(file: TFile, field: string, value: string): Promise<void> {
-    let contentWithoutFrontmatter = await this.vault.read(file)
+    let contentWithoutFrontmatter = await this.vault.cachedRead(file)
     let frontmatterContent = ""
     const frontmatter = this.metadataCache.getFileCache(file).frontmatter
 
@@ -146,4 +150,46 @@ export class DirectorySource implements Source {
 
     return Promise.resolve()
   }
+}
+
+export class DirectorySource extends FileSystemSource {
+  path: string
+
+  constructor(path: string, vault: Vault, metadataCache: MetadataCache) {
+    super(vault, metadataCache)
+    this.vault = vault
+    this.path = path
+  }
+
+  getFiles(): TFile[] {
+    return this.vault.getMarkdownFiles().filter(f => f.path.startsWith(this.path))
+  }
+}
+
+export class TagsSource extends FileSystemSource {
+  tags: string[]
+
+  constructor(tags: string[], vault: Vault, metadataCache: MetadataCache) {
+    super(vault, metadataCache)
+    this.vault = vault
+    this.tags = tags
+  }
+
+  getFiles(): TFile[] {
+    return this.vault.getMarkdownFiles().map(f => {
+      let fmTags = this.metadataCache.getFileCache(f).frontmatter?.tags || ""
+
+      if (!Array.isArray(fmTags)) {
+        fmTags = fmTags.split(",").map((x: string) => x.trim())
+      }
+
+      return {
+        tags: fmTags,
+        file: f,
+      }
+    })
+      .filter(x => x.tags.some((r: string) => this.tags.contains(r)))
+      .map(x => x.file)
+  }
+
 }
