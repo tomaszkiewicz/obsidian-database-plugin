@@ -68,10 +68,19 @@ export default class DatabasePlugin extends Plugin {
 				app.$mount(div);
 
 				child.onunload = () => {
+					this.instances = this.removeItemOnce(this.instances, app)
 					app.$destroy();
 				}
 			}
 		);
+	}
+
+	removeItemOnce(arr : Array<any>, value : any) {
+		var index = arr.indexOf(value);
+		if (index > -1) {
+			arr.splice(index, 1);
+		}
+		return arr;
 	}
 
 	onunload() {
