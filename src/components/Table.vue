@@ -143,7 +143,7 @@ export default Vue.extend({
               :multiple="field.multiple"
               @change="linkUpdated(item, field.name)"
             >
-              <template v-slot:selection="{ attrs, item, parent, selected }">
+              <template v-slot:selection="{ item }">
                 <v-chip v-if="field.multiple" small
                   ><markdown-link :href="Array.isArray(item) ? item[0] : item"
                 /></v-chip>
@@ -273,6 +273,11 @@ div >>> .v-menu__content {
 div >>> .v-data-table__wrapper {
   overflow-y: visible;
   overflow-x: hidden;
+}
+
+div >>> .v-select.v-input--dense .v-chip {
+  margin-top: 2px;
+  margin-bottom: 2px;
 }
 
 /*
