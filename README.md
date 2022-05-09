@@ -153,10 +153,8 @@ By default, the font color will be determined automatically, but if you want to 
 ## Known issues
 
 - doesn't support inline adding of new files/records yet
-- sometimes it doesn't show when changed from live preview to reading mode
 - doesn't support dark mode
 - uses ugly CSS to show context menus
-- sometimes it shows unnecessary vertical scrollbar (when editor is not wide enough)
 
 ## Future plan
 - add filtering
