@@ -67,6 +67,34 @@ fields:
 
 ![Sample view](assets/motorcycles-db.png)
 
+## Sources
+
+There are the following sources available:
+### directory
+
+Reads all files from specified directory.
+
+Example usage:
+
+```
+sources:
+- type: directory
+  path: motorcycles
+```
+
+### tags
+
+Reads all files with one of the tags specified.
+
+Example usage:
+
+```
+sources:
+- type: tags
+  tags:
+  - motorcycles
+```
+
 ## Field types
 
 The plugin, at the moment, supports the following field types:
@@ -161,6 +189,7 @@ By default, the font color will be determined automatically, but if you want to 
 - add grouping
 - add sorting in both directions in the code
 - add ability to use Dataview queries as a source
+- add ability to set global ignore patterns in settings
 
 ## Use plugins and other projects
 
