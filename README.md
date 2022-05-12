@@ -9,6 +9,7 @@ Do you like Dataview plugin for Obsidian? This one is taking Dataview to next le
 - supports multiple types of data, including rating with stars and progress bars
 - supports sorting by multiple columns (including dynamic sorting by clicking on column header)
 - supports creating links between documents (the real ones, shown on graph)
+- you can create templates with a subset of fields and include them in multiple files
 
 ## Example
 
@@ -177,6 +178,24 @@ By default, the font color will be determined automatically, but if you want to 
 ### Other types
 
 `number`, `text`, `date` and other supported by HTML input field (when field type is not any of above, it fallbacks to standard input field with type specified)
+
+## Templates and including other files
+
+If you need to use some of the settings in multiple files you can move that common settings to separate file (in frontmatter section) and then use `include` to read that file:
+
+```
+include: "database-templates/motorcycles.md"
+```
+
+You can also include multiple files:
+
+```
+include:
+- "database-templates/a.md"
+- "database-templates/b.md"
+```
+
+If you have both `include` statement as well as inline parameters, the merging process happens first by evaluating list of `include` and then inline parameters, so they take precedence over `include` - this way you can override some settings, if needed.
 
 ## Known issues
 

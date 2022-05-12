@@ -33,10 +33,27 @@ export default class DatabasePlugin extends Plugin {
 		this.registerMarkdownCodeBlockProcessor(
 			`databaseTable`,
 			async (src, el, context) => {
-				const parameters = parseYaml(src)
+				let parameters = parseYaml(src)
 
 				const div = document.createElement("div");
 				const child = new MarkdownRenderChild(div);
+
+				if(parameters.include) {
+					console.log(parameters.include)
+					if(!Array.isArray(parameters.include)) {
+						parameters.include = parameters.include.split(",")
+					}
+
+					for(let i of parameters.include) {
+						let fm = this.app.metadataCache.getCache(i).frontmatter
+
+						parameters = {
+							...parameters,
+							...fm,
+						}
+					}
+				}
+
 				const sources = mapSources(parameters.sources, this.app)
 				const rows = (
 					await Promise.all(sources.map((x: Source) => x.loadData()))
