@@ -23,17 +23,15 @@ export const mapSources = (sources: any, app: App): Source[] => {
 
       case "tags":
         return new TagsSource(s.tags, app.vault, app.metadataCache)
+
+      case "related":
+        return new RelatedSource(app.workspace.getActiveFile().path, s.tags, app.vault, app.metadataCache)
     }
   })
 }
 
 export abstract class FileSystemSource implements Source {
-  vault: Vault
-  metadataCache: MetadataCache
-
-  constructor(vault: Vault, metadataCache: MetadataCache) {
-    this.vault = vault
-    this.metadataCache = metadataCache
+  constructor(protected vault: Vault, protected metadataCache: MetadataCache) {
   }
 
   abstract getFiles(): TFile[]
@@ -153,12 +151,8 @@ export abstract class FileSystemSource implements Source {
 }
 
 export class DirectorySource extends FileSystemSource {
-  path: string
-
-  constructor(path: string, vault: Vault, metadataCache: MetadataCache) {
+  constructor(private path: string, vault: Vault, metadataCache: MetadataCache) {
     super(vault, metadataCache)
-    this.vault = vault
-    this.path = path
   }
 
   getFiles(): TFile[] {
@@ -167,29 +161,50 @@ export class DirectorySource extends FileSystemSource {
 }
 
 export class TagsSource extends FileSystemSource {
-  tags: string[]
-
-  constructor(tags: string[], vault: Vault, metadataCache: MetadataCache) {
+  constructor(private tags: string[], vault: Vault, metadataCache: MetadataCache) {
     super(vault, metadataCache)
-    this.vault = vault
-    this.tags = tags
   }
 
   getFiles(): TFile[] {
-    return this.vault.getMarkdownFiles().map(f => {
-      let fmTags = this.metadataCache.getFileCache(f).frontmatter?.tags || ""
+    return filterByTags(this.vault.getMarkdownFiles(), this.tags, this.metadataCache)
+  }
+}
 
-      if (!Array.isArray(fmTags)) {
-        fmTags = fmTags.split(",").map((x: string) => x.trim())
-      }
-
-      return {
-        tags: fmTags,
-        file: f,
-      }
-    })
-      .filter(x => x.tags.some((r: string) => this.tags.contains(r)))
-      .map(x => x.file)
+export class RelatedSource extends FileSystemSource {
+  constructor(private currentFile: string, private tags: string[], vault: Vault, metadataCache: MetadataCache) {
+    super(vault, metadataCache)
   }
 
+  getFiles(): TFile[] {
+    const files: string[] = []
+
+    for (const k in this.metadataCache.resolvedLinks) {
+      if (this.metadataCache.resolvedLinks[k][this.currentFile]) {
+        files.push(k)
+      }
+    }
+
+    return filterByTags(this.vault.getMarkdownFiles().filter(x => files.contains(x.path)), this.tags, this.metadataCache)
+  }
+}
+
+function filterByTags(files: TFile[], tags: string[], metadataCache : MetadataCache): TFile[] {
+  if (tags == null || tags.length == 0) {
+    return files
+  }
+
+  return files.map(f => {
+    let fmTags = metadataCache.getFileCache(f).frontmatter?.tags || ""
+
+    if (!Array.isArray(fmTags)) {
+      fmTags = fmTags.split(",").map((x: string) => x.trim())
+    }
+
+    return {
+      tags: fmTags,
+      file: f,
+    }
+  })
+    .filter(x => x.tags.some((r: string) => tags.contains(r)))
+    .map(x => x.file)
 }

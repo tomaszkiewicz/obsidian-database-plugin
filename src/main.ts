@@ -1,9 +1,8 @@
 import { Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, App } from 'obsidian';
-import { parseFrontMatterStringArray } from 'obsidian';
 import { parseYaml } from 'obsidian';
 import { MarkdownPostProcessor, MarkdownRenderChild } from "obsidian";
 import Table from "./components/Table.vue";
-import { DirectorySource, mapSources, Row, Source } from './source';
+import { mapSources, Row, Source } from './source';
 import Vue from 'vue';
 import vuetify from './vuetify'
 import Vuetify from "vuetify/lib"
@@ -38,13 +37,12 @@ export default class DatabasePlugin extends Plugin {
 				const div = document.createElement("div");
 				const child = new MarkdownRenderChild(div);
 
-				if(parameters.include) {
-					console.log(parameters.include)
-					if(!Array.isArray(parameters.include)) {
+				if (parameters.include) {
+					if (!Array.isArray(parameters.include)) {
 						parameters.include = parameters.include.split(",")
 					}
 
-					for(let i of parameters.include) {
+					for (let i of parameters.include) {
 						let fm = this.app.metadataCache.getCache(i).frontmatter
 
 						parameters = {
@@ -52,6 +50,10 @@ export default class DatabasePlugin extends Plugin {
 							...fm,
 						}
 					}
+				}
+
+				while (!this.app.workspace.getActiveFile()) {
+					await new Promise(resolve => setTimeout(resolve, 50));
 				}
 
 				const sources = mapSources(parameters.sources, this.app)
@@ -92,7 +94,7 @@ export default class DatabasePlugin extends Plugin {
 		);
 	}
 
-	removeItemOnce(arr : Array<any>, value : any) {
+	removeItemOnce(arr: Array<any>, value: any) {
 		var index = arr.indexOf(value);
 		if (index > -1) {
 			arr.splice(index, 1);

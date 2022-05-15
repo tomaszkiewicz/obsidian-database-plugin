@@ -96,6 +96,19 @@ sources:
   - motorcycles
 ```
 
+### related
+
+Reads all files that refer to current file, optionally with one of the tags specified.
+
+Example usage:
+
+```
+sources:
+- type: related
+  tags:
+  - motorcycles
+```
+
 ## Field types
 
 The plugin, at the moment, supports the following field types:
