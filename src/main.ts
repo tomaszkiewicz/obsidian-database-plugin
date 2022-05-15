@@ -1,24 +1,19 @@
-import { Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, App } from 'obsidian';
+import { Plugin, PluginSettingTab, Setting, App } from 'obsidian';
 import { parseYaml } from 'obsidian';
-import { MarkdownPostProcessor, MarkdownRenderChild } from "obsidian";
+import { MarkdownRenderChild } from "obsidian";
 import Table from "./components/Table.vue";
 import { mapSources, Row, Source } from './source';
 import Vue from 'vue';
 import vuetify from './vuetify'
-import Vuetify from "vuetify/lib"
 import 'vuetify/dist/vuetify.min.css'
 import { Field } from './field';
 
-Vue.use(Vuetify)
-
-// for future use
 interface DatabasePluginSettings {
-	mySetting: string;
+	globalIgnoreFilters: string[]
 }
 
-// for future use
 const DEFAULT_SETTINGS: DatabasePluginSettings = {
-	mySetting: 'default'
+	globalIgnoreFilters: []
 }
 
 export default class DatabasePlugin extends Plugin {
@@ -28,6 +23,8 @@ export default class DatabasePlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 		this.instances = [];
+
+		this.addSettingTab(new DatabasePluginSettingTab(this.app, this))
 
 		this.registerMarkdownCodeBlockProcessor(
 			`databaseTable`,
@@ -56,13 +53,13 @@ export default class DatabasePlugin extends Plugin {
 					await new Promise(resolve => setTimeout(resolve, 50));
 				}
 
-				const sources = mapSources(parameters.sources, this.app)
+				const sources = mapSources(parameters.sources, this.app, this.settings.globalIgnoreFilters)
 				const rows = (
 					await Promise.all(sources.map((x: Source) => x.loadData()))
 				).flat();
 
 				for (let f of parameters.fields.filter((f: Field) => f.type == "link" && f.sources != null)) {
-					const fieldSources = mapSources(f.sources, this.app)
+					const fieldSources = mapSources(f.sources, this.app, this.settings.globalIgnoreFilters)
 
 					let autocomplete = (
 						await Promise.all(fieldSources.map((x: Source) => x.loadData()))
@@ -115,13 +112,9 @@ export default class DatabasePlugin extends Plugin {
 	}
 }
 
-// for future use
 class DatabasePluginSettingTab extends PluginSettingTab {
-	plugin: DatabasePlugin;
-
-	constructor(app: App, plugin: DatabasePlugin) {
+	constructor(app: App, private plugin: DatabasePlugin) {
 		super(app, plugin);
-		this.plugin = plugin;
 	}
 
 	display(): void {
@@ -129,18 +122,17 @@ class DatabasePluginSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		containerEl.createEl('h2', { text: 'Settings for my awesome plugin.' });
+		containerEl.createEl('h2', { text: 'Database settings' });
 
 		new Setting(containerEl)
-			.setName('Setting #1')
-			.setDesc('It\'s a secret')
-			.addText(text => text
-				.setPlaceholder('Enter your secret')
-				.setValue(this.plugin.settings.mySetting)
-				.onChange(async (value) => {
-					console.log('Secret: ' + value);
-					this.plugin.settings.mySetting = value;
-					await this.plugin.saveSettings();
-				}));
+			.setName('Global ignore list')
+			.setDesc('Put a list of regexes, one per line, to ignore some of the files')
+			.addTextArea(ta =>
+				ta.setPlaceholder('Put regex to ignore fiels, one per line')
+					.setValue(this.plugin.settings.globalIgnoreFilters.join('\n'))
+					.onChange(async (value) => {
+						this.plugin.settings.globalIgnoreFilters = value.split('\n');
+						await this.plugin.saveSettings();
+					}));
 	}
 }

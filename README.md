@@ -210,6 +210,14 @@ include:
 
 If you have both `include` statement as well as inline parameters, the merging process happens first by evaluating list of `include` and then inline parameters, so they take precedence over `include` - this way you can override some settings, if needed.
 
+## settings
+
+### Global ignore filter
+
+This setting allow you to set a list of regexpes that will be applied to all your tables.
+
+It's especially useful e.g. if you're using Folder Note plugin which generates `index.md` file in the folder.
+
 ## Known issues
 
 - doesn't support inline adding of new files/records yet
@@ -221,7 +229,6 @@ If you have both `include` statement as well as inline parameters, the merging p
 - add grouping
 - add sorting in both directions in the code
 - add ability to use Dataview queries as a source
-- add ability to set global ignore patterns in settings
 
 ## Use plugins and other projects
 

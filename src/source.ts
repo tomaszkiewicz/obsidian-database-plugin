@@ -15,32 +15,45 @@ export interface Source {
   setData(file: TFile, field: string, value: string): Promise<void>
 }
 
-export const mapSources = (sources: any, app: App): Source[] => {
+export const mapSources = (sources: any, app: App, ignoreFilters: string[]): Source[] => {
   return sources.map((s: any) => {
     switch (s.type) {
       case "directory":
-        return new DirectorySource(s.path, app.vault, app.metadataCache)
+        return new DirectorySource(s.path, app.vault, app.metadataCache, ignoreFilters)
 
       case "tags":
-        return new TagsSource(s.tags, app.vault, app.metadataCache)
+        return new TagsSource(s.tags, app.vault, app.metadataCache, ignoreFilters)
 
       case "related":
-        return new RelatedSource(app.workspace.getActiveFile().path, s.tags, app.vault, app.metadataCache)
+        return new RelatedSource(app.workspace.getActiveFile().path, s.tags, app.vault, app.metadataCache, ignoreFilters)
     }
   })
 }
 
 export abstract class FileSystemSource implements Source {
-  constructor(protected vault: Vault, protected metadataCache: MetadataCache) {
+  constructor(protected vault: Vault, protected metadataCache: MetadataCache, private ignoreFilters: string[]) {
   }
 
   abstract getFiles(): TFile[]
+
+  private matchIgnoreFilters(path: string) {
+    for (let filter of this.ignoreFilters) {
+      if (filter && path.match(filter)) {
+        return true
+      }
+    }
+    return false
+  }
 
   async loadData(): Promise<Row[]> {
     const files = this.getFiles()
     const rows = [] as Row[]
 
     for (let f of files) {
+      if(this.matchIgnoreFilters(f.path)) {
+        continue
+      }
+
       const links = await this.readLinks(f)
       rows.push({
         ...this.metadataCache.getFileCache(f).frontmatter,
@@ -151,8 +164,8 @@ export abstract class FileSystemSource implements Source {
 }
 
 export class DirectorySource extends FileSystemSource {
-  constructor(private path: string, vault: Vault, metadataCache: MetadataCache) {
-    super(vault, metadataCache)
+  constructor(private path: string, vault: Vault, metadataCache: MetadataCache, ignoreFilters: string[]) {
+    super(vault, metadataCache, ignoreFilters)
   }
 
   getFiles(): TFile[] {
@@ -161,8 +174,8 @@ export class DirectorySource extends FileSystemSource {
 }
 
 export class TagsSource extends FileSystemSource {
-  constructor(private tags: string[], vault: Vault, metadataCache: MetadataCache) {
-    super(vault, metadataCache)
+  constructor(private tags: string[], vault: Vault, metadataCache: MetadataCache, ignoreFilters: string[]) {
+    super(vault, metadataCache, ignoreFilters)
   }
 
   getFiles(): TFile[] {
@@ -171,8 +184,8 @@ export class TagsSource extends FileSystemSource {
 }
 
 export class RelatedSource extends FileSystemSource {
-  constructor(private currentFile: string, private tags: string[], vault: Vault, metadataCache: MetadataCache) {
-    super(vault, metadataCache)
+  constructor(private currentFile: string, private tags: string[], vault: Vault, metadataCache: MetadataCache, ignoreFilters: string[]) {
+    super(vault, metadataCache, ignoreFilters)
   }
 
   getFiles(): TFile[] {
@@ -188,7 +201,7 @@ export class RelatedSource extends FileSystemSource {
   }
 }
 
-function filterByTags(files: TFile[], tags: string[], metadataCache : MetadataCache): TFile[] {
+function filterByTags(files: TFile[], tags: string[], metadataCache: MetadataCache): TFile[] {
   if (tags == null || tags.length == 0) {
     return files
   }
