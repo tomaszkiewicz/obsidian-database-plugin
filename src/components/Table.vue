@@ -16,6 +16,7 @@ import {
   VCombobox,
   VChip,
   Ripple,
+  VIcon,
 } from "vuetify/lib";
 
 export default Vue.extend({
@@ -31,6 +32,7 @@ export default Vue.extend({
     VSimpleCheckbox,
     VCombobox,
     VChip,
+    VIcon,
   },
   directives: {
     Ripple,
@@ -99,6 +101,16 @@ export default Vue.extend({
       }
 
       return false;
+    },
+
+    getFieldByName(name: string): Field {
+      return this.fields.filter((f: Field) => f.name == name).first();
+    },
+
+    getFieldSelectedOption(fieldName: string, optionValue: string): any {
+      return this.getFieldByName(fieldName).options.filter(
+        (o : any) => o.value == optionValue
+      ).first();
     },
   },
 });
@@ -216,6 +228,19 @@ export default Vue.extend({
             />
           </td>
         </tr>
+      </template>
+
+      <template
+        v-slot:group.header="{ groupBy, group, isOpen, toggle, remove }"
+        :fields="fields"
+      >
+        <td :colspan="headers.length">
+          <v-icon @click="toggle">
+            {{ isOpen ? "mdi-minus" : "mdi-plus" }}
+          </v-icon>
+          <span>{{ getFieldByName(groupBy[0]).label }} : {{ getFieldSelectedOption(groupBy[0], group).label }}</span>
+          <!-- <v-icon @click="remove"> mdi-close </v-icon> -->
+        </td>
       </template>
     </v-data-table>
   </v-app>

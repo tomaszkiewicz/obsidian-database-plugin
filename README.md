@@ -210,7 +210,7 @@ include:
 
 If you have both `include` statement as well as inline parameters, the merging process happens first by evaluating list of `include` and then inline parameters, so they take precedence over `include` - this way you can override some settings, if needed.
 
-## settings
+## Settings
 
 ### Global ignore filter
 
@@ -227,6 +227,7 @@ It's especially useful e.g. if you're using Folder Note plugin which generates `
 ## Future plan
 - add filtering
 - add grouping
+- add ability to add and remove records
 - add sorting in both directions in the code
 - add ability to use Dataview queries as a source
 
