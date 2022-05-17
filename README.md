@@ -149,6 +149,30 @@ Shows a slider that you can use to set the progress  (0-100%).
 
 Simple checkbox with true/false values
 
+### image
+
+This field allows you to display image in table cell.
+The image is **read-only** and cannot be modified from the table in the current version.
+
+The path to the image should be relative to vault root, e.g. `motorcycles/images/f750gs.jpg`
+
+Sample file with the data:
+```
+---
+image: motorcycles/images/f750.jpg
+---
+```
+
+You can configure field with optional `maxWidth` and `maxHeigh` and the image will be scaled to fit that sizes:
+
+```
+- name: image
+  type: image
+  label: Image
+  maxWidth: 100px
+  maxHeigh: 100px
+```
+
 ### dropdown
 
 Generates a dropdown with selectable values. You can use it to select predefined value or values from list:

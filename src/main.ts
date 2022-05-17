@@ -74,6 +74,7 @@ export default class DatabasePlugin extends Plugin {
 						props: {
 							...parameters,
 							rows,
+							urlBase: (this.app.vault.adapter as any).basePath.replaceAll("\\", "/"),
 						}
 					}),
 				})

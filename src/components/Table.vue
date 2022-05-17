@@ -16,7 +16,9 @@ import {
   VCombobox,
   VChip,
   Ripple,
+  VBtn,
   VIcon,
+  VImg,
 } from "vuetify/lib";
 
 export default Vue.extend({
@@ -33,6 +35,8 @@ export default Vue.extend({
     VCombobox,
     VChip,
     VIcon,
+    VBtn,
+    VImg,
   },
   directives: {
     Ripple,
@@ -42,6 +46,7 @@ export default Vue.extend({
     groupBy: [],
     rows: [],
     sortBy: [],
+    urlBase: [],
   },
   computed: {
     headers() {
@@ -54,6 +59,11 @@ export default Vue.extend({
     },
   },
   methods: {
+    async rowDeleted(row: Row): Promise<void> {
+      console.log("deleting", row);
+      //await row._source.deleteRow(row)
+    },
+
     async fieldUpdated(row: Row, field: string): Promise<void> {
       console.log(`updated field ${field} on ${row._file.path}`);
       await row._source.setData(row._file, field, row[field]);
@@ -108,9 +118,9 @@ export default Vue.extend({
     },
 
     getFieldSelectedOption(fieldName: string, optionValue: string): any {
-      return this.getFieldByName(fieldName).options.filter(
-        (o : any) => o.value == optionValue
-      ).first();
+      return this.getFieldByName(fieldName)
+        .options.filter((o: any) => o.value == optionValue)
+        .first();
     },
   },
 });
@@ -144,6 +154,22 @@ export default Vue.extend({
             <markdown-link
               :href="item._file.name"
               v-if="field.type == 'filePath'"
+            />
+
+            <v-btn
+              v-if="field.type == 'delete'"
+              icon
+              x-small
+              @click="rowDeleted(item)"
+            >
+              <v-icon>mdi-delete-outline</v-icon>
+            </v-btn>
+
+            <v-img
+              v-if="field.type == 'image' && item[field.name]"
+              :src="`app://local/${urlBase}/${item[field.name]}`"
+              :max-width="field.maxWidth"
+              :max-height="field.maxHeigh"
             />
 
             <v-combobox
@@ -196,6 +222,8 @@ export default Vue.extend({
                   field.type != 'fileName' &&
                   field.type != 'filePath' &&
                   field.type != 'checkbox' &&
+                  field.type != 'delete' &&
+                  field.type != 'image' &&
                   field.type != 'rating')
               "
               :type="field.type"
@@ -238,7 +266,10 @@ export default Vue.extend({
           <v-icon @click="toggle">
             {{ isOpen ? "mdi-minus" : "mdi-plus" }}
           </v-icon>
-          <span>{{ getFieldByName(groupBy[0]).label }} : {{ getFieldSelectedOption(groupBy[0], group).label }}</span>
+          <span
+            >{{ getFieldByName(groupBy[0]).label }} :
+            {{ getFieldSelectedOption(groupBy[0], group).label }}</span
+          >
           <!-- <v-icon @click="remove"> mdi-close </v-icon> -->
         </td>
       </template>
