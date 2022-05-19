@@ -61,7 +61,7 @@ export default Vue.extend({
   methods: {
     async rowDeleted(row: Row): Promise<void> {
       console.log("deleting", row);
-      //await row._source.deleteRow(row)
+      await row._source.deleteRow(row._file);
     },
 
     async fieldUpdated(row: Row, field: string): Promise<void> {

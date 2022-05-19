@@ -13,6 +13,7 @@ export interface Source {
   readLinks(file: TFile): Promise<any>
   setLink(file: TFile, field: string, value: string): Promise<void>
   setData(file: TFile, field: string, value: string): Promise<void>
+  deleteRow(file: TFile) : Promise<void>
 }
 
 export const mapSources = (sources: any, app: App, ignoreFilters: string[]): Source[] => {
@@ -163,6 +164,10 @@ export abstract class FileSystemSource implements Source {
     await this.vault.modify(file, outFileContents)
 
     return Promise.resolve()
+  }
+
+  async deleteRow(file: TFile): Promise<void> {
+    return this.vault.delete(file)
   }
 }
 
