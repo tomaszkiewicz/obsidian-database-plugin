@@ -26,6 +26,9 @@ export const mapSources = (sources: any, app: App, ignoreFilters: string[]): Sou
 
       case "related":
         return new RelatedSource(app.workspace.getActiveFile().path, s.tags, app.vault, app.metadataCache, ignoreFilters)
+
+      case "self":
+        return new SelfSource(app.workspace.getActiveFile(), app.vault, app.metadataCache, ignoreFilters)
     }
   })
 }
@@ -50,7 +53,7 @@ export abstract class FileSystemSource implements Source {
     const rows = [] as Row[]
 
     for (let f of files) {
-      if(this.matchIgnoreFilters(f.path)) {
+      if (this.matchIgnoreFilters(f.path)) {
         continue
       }
 
@@ -170,6 +173,16 @@ export class DirectorySource extends FileSystemSource {
 
   getFiles(): TFile[] {
     return this.vault.getMarkdownFiles().filter(f => f.path.startsWith(this.path))
+  }
+}
+
+export class SelfSource extends FileSystemSource {
+  constructor(private file: TFile, vault: Vault, metadataCache: MetadataCache, ignoreFilters: string[]) {
+    super(vault, metadataCache, ignoreFilters)
+  }
+
+  getFiles(): TFile[] {
+    return[this.file]
   }
 }
 

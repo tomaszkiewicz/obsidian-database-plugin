@@ -109,6 +109,37 @@ sources:
   - motorcycles
 ```
 
+### self
+
+Self source provides a convenient way to refer to the file the table is embedded into.
+
+This source is especially useful in your daily notes, as you can make a nice machanism for tracking habits:
+
+![Self source](assets/self-source.png)
+
+Sample code for above view (btw, I suggest adding that to template and then use `include` feature so you can easily update that table in the future):
+
+```
+sources:
+- type: self
+fields:
+- name: meditation
+  label: Meditation
+  type: checkbox
+- name: excercise
+  label: Excercise
+  type: checkbox
+- name: eating
+  label: Eat healthy
+  type: checkbox
+- name: walk
+  label: Go for a walk
+  type: checkbox
+- name: sleep
+  label: Sleep >7h
+  type: checkbox
+```
+
 ## Field types
 
 The plugin, at the moment, supports the following field types:
