@@ -46,7 +46,7 @@ export default Vue.extend({
     groupBy: [],
     rows: [],
     sortBy: [],
-    urlBase: [],
+    urlBase: String,
   },
   computed: {
     headers() {
@@ -126,155 +126,153 @@ export default Vue.extend({
 });
 </script>
 <template>
-  <v-app>
-    <v-data-table
-      :headers="headers"
-      :items="rows"
-      hide-default-footer
-      dense
-      :group-by="groupBy"
-      item-key="_file.path"
-      multi-sort
-      :sort-by="sortBy"
-      :items-per-page="-1"
-    >
-      <template v-slot:item="{ item }" :fields="fields">
-        <tr :data-category-id="item._file.path" :data-id="item._file.path">
-          <td
-            v-for="field in fields"
-            :key="field.name"
-            :style="getCellStyle(field, item)"
-            :width="field.width || ''"
+  <v-data-table
+    :headers="headers"
+    :items="rows"
+    hide-default-footer
+    dense
+    :group-by="groupBy"
+    item-key="_file.path"
+    multi-sort
+    :sort-by="sortBy"
+    :items-per-page="-1"
+  >
+    <template v-slot:item="{ item }" :fields="fields">
+      <tr :data-category-id="item._file.path" :data-id="item._file.path">
+        <td
+          v-for="field in fields"
+          :key="field.name"
+          :style="getCellStyle(field, item)"
+          :width="field.width || ''"
+        >
+          <markdown-link
+            :href="item._file.name"
+            v-if="field.type == 'fileName'"
+          />
+
+          <markdown-link
+            :href="item._file.name"
+            v-if="field.type == 'filePath'"
+          />
+
+          <v-btn
+            v-if="field.type == 'delete'"
+            icon
+            x-small
+            @click="rowDeleted(item)"
           >
-            <markdown-link
-              :href="item._file.name"
-              v-if="field.type == 'fileName'"
-            />
+            <v-icon>mdi-delete-outline</v-icon>
+          </v-btn>
 
-            <markdown-link
-              :href="item._file.name"
-              v-if="field.type == 'filePath'"
-            />
+          <v-img
+            v-if="field.type == 'image' && item[field.name]"
+            :src="`app://local/${urlBase}/${item[field.name]}`"
+            :max-width="field.maxWidth"
+            :max-height="field.maxHeigh"
+          />
 
-            <v-btn
-              v-if="field.type == 'delete'"
-              icon
-              x-small
-              @click="rowDeleted(item)"
-            >
-              <v-icon>mdi-delete-outline</v-icon>
-            </v-btn>
-
-            <v-img
-              v-if="field.type == 'image' && item[field.name]"
-              :src="`app://local/${urlBase}/${item[field.name]}`"
-              :max-width="field.maxWidth"
-              :max-height="field.maxHeigh"
-            />
-
-            <v-combobox
-              v-if="field.type == 'link'"
-              v-model="item[field.name]"
-              :items="field._sourceAutocomplete || []"
-              hide-details
-              dense
-              :multiple="field.multiple"
-              @change="linkUpdated(item, field.name)"
-            >
-              <template v-slot:selection="{ item }">
-                <v-chip v-if="field.multiple" small
-                  ><markdown-link :href="Array.isArray(item) ? item[0] : item"
-                /></v-chip>
-                <markdown-link
-                  v-else
-                  :key="item.join(',')"
-                  :href="Array.isArray(item) ? item[0] : item"
-                />
-              </template>
-            </v-combobox>
-
-            <v-rating
-              v-if="field.type == 'rating'"
-              hover
-              half-increments
-              dense
-              :value="1 * (item[field.name] || 0)"
-              @input="
-                item[field.name] = $event;
-                fieldUpdated(item, field.name);
-              "
-            />
-
-            <v-slider
-              v-if="field.type == 'progress'"
-              dense
-              hide-details
-              v-model.lazy="item[field.name]"
-              @end="fieldUpdated(item, field.name)"
-            />
-
-            <input
-              v-if="
-                !field.type ||
-                (field.type != 'dropdown' &&
-                  field.type != 'link' &&
-                  field.type != 'progress' &&
-                  field.type != 'fileName' &&
-                  field.type != 'filePath' &&
-                  field.type != 'checkbox' &&
-                  field.type != 'delete' &&
-                  field.type != 'image' &&
-                  field.type != 'rating')
-              "
-              :type="field.type"
-              :placeholder="'' + (field.default || '')"
-              v-model.lazy="item[field.name]"
-              @change="fieldUpdated(item, field.name)"
-            />
-
-            <v-simple-checkbox
-              v-if="field.type == 'checkbox'"
-              v-model="item[field.name]"
-              hide-details
-              dense
-              @input="fieldUpdated(item, field.name)"
-            />
-
-            <v-select
-              v-if="field.type == 'dropdown'"
-              v-model="item[field.name]"
-              :items="field.options"
-              hide-details
-              item-text="label"
-              item-value="value"
-              dense
-              :dark="isFontWhite(field, item)"
-              :small-chips="field.multiple != null && field.multiple != false"
-              :multiple="field.multiple != null && field.multiple != false"
-              :chips="field.multiple != null && field.multiple != false"
-              @change="fieldUpdated(item, field.name)"
-            />
-          </td>
-        </tr>
-      </template>
-
-      <template
-        v-slot:group.header="{ groupBy, group, isOpen, toggle, remove }"
-        :fields="fields"
-      >
-        <td :colspan="headers.length">
-          <v-icon @click="toggle">
-            {{ isOpen ? "mdi-minus" : "mdi-plus" }}
-          </v-icon>
-          <span
-            >{{ getFieldByName(groupBy[0]).label }} :
-            {{ getFieldSelectedOption(groupBy[0], group).label }}</span
+          <v-combobox
+            v-if="field.type == 'link'"
+            v-model="item[field.name]"
+            :items="field._sourceAutocomplete || []"
+            hide-details
+            dense
+            :multiple="field.multiple"
+            @change="linkUpdated(item, field.name)"
           >
-          <!-- <v-icon @click="remove"> mdi-close </v-icon> -->
+            <template v-slot:selection="{ item }">
+              <v-chip v-if="field.multiple" small
+                ><markdown-link :href="Array.isArray(item) ? item[0] : item"
+              /></v-chip>
+              <markdown-link
+                v-else
+                :key="item.join(',')"
+                :href="Array.isArray(item) ? item[0] : item"
+              />
+            </template>
+          </v-combobox>
+
+          <v-rating
+            v-if="field.type == 'rating'"
+            hover
+            half-increments
+            dense
+            :value="1 * (item[field.name] || 0)"
+            @input="
+              item[field.name] = $event;
+              fieldUpdated(item, field.name);
+            "
+          />
+
+          <v-slider
+            v-if="field.type == 'progress'"
+            dense
+            hide-details
+            v-model.lazy="item[field.name]"
+            @end="fieldUpdated(item, field.name)"
+          />
+
+          <input
+            v-if="
+              !field.type ||
+              (field.type != 'dropdown' &&
+                field.type != 'link' &&
+                field.type != 'progress' &&
+                field.type != 'fileName' &&
+                field.type != 'filePath' &&
+                field.type != 'checkbox' &&
+                field.type != 'delete' &&
+                field.type != 'image' &&
+                field.type != 'rating')
+            "
+            :type="field.type"
+            :placeholder="'' + (field.default || '')"
+            v-model.lazy="item[field.name]"
+            @change="fieldUpdated(item, field.name)"
+          />
+
+          <v-simple-checkbox
+            v-if="field.type == 'checkbox'"
+            v-model="item[field.name]"
+            hide-details
+            dense
+            @input="fieldUpdated(item, field.name)"
+          />
+
+          <v-select
+            v-if="field.type == 'dropdown'"
+            v-model="item[field.name]"
+            :items="field.options"
+            hide-details
+            item-text="label"
+            item-value="value"
+            dense
+            :dark="isFontWhite(field, item)"
+            :small-chips="field.multiple != null && field.multiple != false"
+            :multiple="field.multiple != null && field.multiple != false"
+            :chips="field.multiple != null && field.multiple != false"
+            @change="fieldUpdated(item, field.name)"
+          />
         </td>
-      </template>
-    </v-data-table>
-  </v-app>
+      </tr>
+    </template>
+
+    <template
+      v-slot:group.header="{ groupBy, group, isOpen, toggle, remove }"
+      :fields="fields"
+    >
+      <td :colspan="headers.length">
+        <v-icon @click="toggle">
+          {{ isOpen ? "mdi-minus" : "mdi-plus" }}
+        </v-icon>
+        <span
+          >{{ getFieldByName(groupBy[0]).label }} :
+          {{ getFieldSelectedOption(groupBy[0], group).label }}</span
+        >
+        <!-- <v-icon @click="remove"> mdi-close </v-icon> -->
+      </td>
+    </template>
+  </v-data-table>
 </template>
 <style scoped>
 div >>> a,

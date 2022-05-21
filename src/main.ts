@@ -1,12 +1,10 @@
 import { Plugin, PluginSettingTab, Setting, App } from 'obsidian';
 import { parseYaml } from 'obsidian';
 import { MarkdownRenderChild } from "obsidian";
-import Table from "./components/Table.vue";
-import { mapSources, Row, Source } from './source';
+import VueApp from "./App.vue";
 import Vue from 'vue';
 import vuetify from './vuetify'
 import 'vuetify/dist/vuetify.min.css'
-import { Field } from './field';
 
 interface DatabasePluginSettings {
 	globalIgnoreFilters: string[]
@@ -34,50 +32,22 @@ export default class DatabasePlugin extends Plugin {
 				const div = document.createElement("div");
 				const child = new MarkdownRenderChild(div);
 
-				if (parameters.include) {
-					if (!Array.isArray(parameters.include)) {
-						parameters.include = parameters.include.split(",")
-					}
-
-					for (let i of parameters.include) {
-						let fm = this.app.metadataCache.getCache(i).frontmatter
-
-						parameters = {
-							...parameters,
-							...fm,
-						}
-					}
-				}
-
 				while (!this.app.workspace.getActiveFile()) {
 					await new Promise(resolve => setTimeout(resolve, 50));
 				}
 
-				const sources = mapSources(parameters.sources, this.app, this.settings.globalIgnoreFilters)
-				const rows = (
-					await Promise.all(sources.map((x: Source) => x.loadData()))
-				).flat();
-
-				for (let f of parameters.fields.filter((f: Field) => f.type == "link" && f.sources != null)) {
-					const fieldSources = mapSources(f.sources, this.app, this.settings.globalIgnoreFilters)
-
-					let autocomplete = (
-						await Promise.all(fieldSources.map((x: Source) => x.loadData()))
-					).flat().map((x: Row) => x._file.name.replace(".md", ""));
-
-					f._sourceAutocomplete = autocomplete
-				}
-
 				const app = new Vue({
 					vuetify,
-					render: h => h(Table, {
+					render: h => h(VueApp, {
 						props: {
-							...parameters,
-							rows,
+							parameters,
+							app: this.app,
+							settings: this.settings,
 							urlBase: (this.app.vault.adapter as any).basePath.replaceAll("\\", "/"),
 						}
 					}),
 				})
+
 				this.instances.push(app)
 
 				context.addChild(child)
@@ -85,8 +55,9 @@ export default class DatabasePlugin extends Plugin {
 				app.$mount(div);
 
 				child.onunload = () => {
-					this.instances = this.removeItemOnce(this.instances, app)
-					app.$destroy();
+					// this.instances = this.removeItemOnce(this.instances, app)
+					// app.$destroy();
+					// console.log("onunload child")
 				}
 			}
 		);
