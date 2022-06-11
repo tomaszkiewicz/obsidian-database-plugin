@@ -83,6 +83,8 @@ sources:
   path: motorcycles
 ```
 
+This source supports adding files. After you set your source, in the last line there will be a new input and button displayed so you can add new file directly from the table.
+
 ### tags
 
 Reads all files with one of the tags specified.
@@ -95,6 +97,11 @@ sources:
   tags:
   - motorcycles
 ```
+
+This source supports adding files. After you set your source, in the last line there will be a new input and button displayed so you can add new file directly from the table.
+
+> **⚠ WARNING:**
+> If you use some plugins for templating (like Templater) the plugins may override files created by Database Plugin and remove default tagging it sets, so the file may not show properly in the table!
 
 ### related
 
@@ -243,6 +250,18 @@ Single value example (with colors):
 
 By default, the font color will be determined automatically, but if you want to adjust it to be white, then mark the item with `dark: true` to indicate that a provided color is dark.
 
+### delete
+
+By adding a special column with type `delete` you can enable delete feature for your database:
+
+```
+- type: delete
+  width: 1%
+```
+
+> **⚠ WARNING:**
+> Current version of plugin instantly deletes the file, without any confirmation!
+
 ### Other types
 
 `number`, `text`, `date` and other supported by HTML input field (when field type is not any of above, it fallbacks to standard input field with type specified)
@@ -275,14 +294,14 @@ It's especially useful e.g. if you're using Folder Note plugin which generates `
 
 ## Known issues
 
-- doesn't support inline adding of new files/records yet
+- `tags` source sometimes doesn't refresh correctly after adding new file
+- plugin doesn't show errors inline (only in developer console)
 - doesn't support dark mode
 - uses ugly CSS to show context menus
 
 ## Future plan
 - add filtering
 - add grouping
-- add ability to add and remove records
 - add sorting in both directions in the code
 - add ability to use Dataview queries as a source
 

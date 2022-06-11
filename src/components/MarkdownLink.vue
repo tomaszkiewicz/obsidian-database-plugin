@@ -13,12 +13,14 @@ export default Vue.extend({
   },
   computed: {},
   mounted() {
-    MarkdownRenderer.renderMarkdown(
-      `<span>[[${this.href.replace(".md", "")}]]</span>`,
-      this.$el,
-      "Untitled",
-      this
-    );
+    if (this.href != null){
+      MarkdownRenderer.renderMarkdown(
+        `<span>[[${this.href.replace(".md", "")}]]</span>`,
+        this.$el,
+        "Untitled",
+        this
+      );
+    }
   },
 });
 </script>

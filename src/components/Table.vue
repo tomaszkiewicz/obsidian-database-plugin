@@ -1,7 +1,7 @@
 <script lang="ts">
 import Vue from "vue";
 import type { Field } from "../field";
-import { Row } from "../source";
+import { AddSource, Row } from "../source";
 import MarkdownLink from "./MarkdownLink.vue";
 import { TinyColor } from "@ctrl/tinycolor";
 import {
@@ -19,6 +19,10 @@ import {
   VBtn,
   VIcon,
   VImg,
+  VRow,
+  VCol,
+  VSpacer,
+  VContainer,
 } from "vuetify/lib";
 
 export default Vue.extend({
@@ -37,6 +41,10 @@ export default Vue.extend({
     VIcon,
     VBtn,
     VImg,
+    VRow,
+    VCol,
+    VSpacer,
+    VContainer,
   },
   directives: {
     Ripple,
@@ -44,9 +52,15 @@ export default Vue.extend({
   props: {
     fields: [],
     groupBy: [],
+    sources: [],
     rows: [],
     sortBy: [],
     urlBase: String,
+  },
+  data() {
+    return {
+      newFileName: "",
+    };
   },
   computed: {
     headers() {
@@ -57,11 +71,22 @@ export default Vue.extend({
         };
       });
     },
+    addSources() {
+      return this.sources.filter((s: AddSource) => "addRow" in s);
+    },
   },
   methods: {
+    async addRow(): Promise<void> {
+      const addSources = this.addSources;
+      if (addSources.length == 1) {
+        await addSources[0].addRow(this.newFileName);
+      }
+      this.$emit("refresh");
+    },
+
     async rowDeleted(row: Row): Promise<void> {
-      console.log("deleting", row);
       await row._source.deleteRow(row._file);
+      this.$emit("refresh");
     },
 
     async fieldUpdated(row: Row, field: string): Promise<void> {
@@ -72,7 +97,7 @@ export default Vue.extend({
     async linkUpdated(row: Row, field: string): Promise<void> {
       console.log(`updated link ${field} on ${row._file.path}`);
 
-      if (!Array.isArray(row[field])) {
+      if (!Array.isArray(row[field]) && row[field] != null) {
         row[field] = [row[field]];
       }
 
@@ -127,6 +152,7 @@ export default Vue.extend({
 </script>
 <template>
   <v-data-table
+    class="ma-0 pa-0"
     :headers="headers"
     :items="rows"
     hide-default-footer
@@ -271,6 +297,34 @@ export default Vue.extend({
         >
         <!-- <v-icon @click="remove"> mdi-close </v-icon> -->
       </td>
+    </template>
+
+    <template v-slot:body.append="{ headers }" v-if="addSources.length > 0">
+      <tr>
+        <td
+          :colspan="headers.length"
+          style="text-align: center; background-color: white"
+        >
+          <v-row class="ma-0 pa-0" no-gutters dense>
+            <v-spacer />
+            <v-col cols="4" class="pa-0 ma-0">
+              <v-text-field
+                v-model="newFileName"
+                append-outer-icon="mdi-plus-circle-outline"
+                placeholder="new file name"
+                type="text"
+                hide-details
+                solo
+                flat
+                single-line
+                @keydown.enter="addRow"
+                @click:append-outer="addRow"
+              />
+            </v-col>
+            <v-spacer />
+          </v-row>
+        </td>
+      </tr>
     </template>
   </v-data-table>
 </template>

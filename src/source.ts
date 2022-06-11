@@ -13,7 +13,11 @@ export interface Source {
   readLinks(file: TFile): Promise<any>
   setLink(file: TFile, field: string, value: string): Promise<void>
   setData(file: TFile, field: string, value: string): Promise<void>
-  deleteRow(file: TFile) : Promise<void>
+  deleteRow(file: TFile): Promise<void>
+}
+
+export interface AddSource extends Source {
+  addRow(name: string): Promise<TFile>
 }
 
 export const mapSources = (sources: any, app: App, ignoreFilters: string[]): Source[] => {
@@ -118,11 +122,15 @@ export abstract class FileSystemSource implements Source {
 
     const linksObj = parseYaml(linksContent) || {}
 
-    if (!Array.isArray(value)) {
+    if (!Array.isArray(value) && value != null) {
       value = [value]
     }
 
-    linksObj[field] = value.map((x: string) => `[[${x.trim()}]]`)
+    if (value == null) {
+      value = []
+    }
+
+    linksObj[field] = value.filter((x: string) => x != null).map((x: string) => `[[${x.trim()}]]`)
 
     if (linksObj[field].length == 1) {
       linksObj[field] = linksObj[field][0]
@@ -171,9 +179,13 @@ export abstract class FileSystemSource implements Source {
   }
 }
 
-export class DirectorySource extends FileSystemSource {
+export class DirectorySource extends FileSystemSource implements AddSource {
   constructor(private path: string, vault: Vault, metadataCache: MetadataCache, ignoreFilters: string[]) {
     super(vault, metadataCache, ignoreFilters)
+  }
+
+  addRow(name: string): Promise<TFile> {
+    return this.vault.create(this.path + "/" + name + ".md", "")
   }
 
   getFiles(): TFile[] {
@@ -187,17 +199,21 @@ export class SelfSource extends FileSystemSource {
   }
 
   getFiles(): TFile[] {
-    return[this.file]
+    return [this.file]
   }
 }
 
-export class TagsSource extends FileSystemSource {
+export class TagsSource extends FileSystemSource implements AddSource {
   constructor(private tags: string[], vault: Vault, metadataCache: MetadataCache, ignoreFilters: string[]) {
     super(vault, metadataCache, ignoreFilters)
   }
 
   getFiles(): TFile[] {
     return filterByTags(this.vault.getMarkdownFiles(), this.tags, this.metadataCache)
+  }
+
+  addRow(name: string): Promise<TFile> {
+    return this.vault.create(name + ".md", `---\ntags: ${this.tags.join(", ")}\n---\n`)
   }
 }
 
@@ -225,7 +241,7 @@ function filterByTags(files: TFile[], tags: string[], metadataCache: MetadataCac
   }
 
   return files.map(f => {
-    let fmTags = metadataCache.getFileCache(f).frontmatter?.tags || ""
+    let fmTags = metadataCache.getFileCache(f)?.frontmatter?.tags || ""
 
     if (!Array.isArray(fmTags)) {
       fmTags = fmTags.split(",").map((x: string) => x.trim())
