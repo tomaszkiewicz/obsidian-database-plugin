@@ -18,7 +18,7 @@ Let's create a database of motorcycles offers you consider buying.
 1. create directory called `motorcycles`
 2. create a file with a table:
 
-```
+`````
 ```databaseTable
 sources:
 - type: directory
@@ -58,9 +58,8 @@ fields:
   - name: owned
     label: Owned
     type: checkbox
-\```
 ```
-(replace final line with triple ` )
+`````
 
 3. now, create some files inside directory `motorcycles` (and if you want autosuggest for `Brand` field then create some files in `brands` folder), they can be blank or you can put some sample frontmatter matching `name` in the list above
 4. after you go back to a file with a table, you should see entries for newly created files
